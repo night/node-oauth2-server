@@ -102,9 +102,11 @@ describe('AuthenticateHandler', function() {
         query: {}
       });
 
-      return handler.handle(request).then(function(data) {
-        data.should.equal(accessToken);
-      });
+      return handler.handle(request)
+        .then(function(data) {
+          data.should.equal(accessToken);
+        })
+        .catch(should.fail);
     });
   });
 
@@ -170,9 +172,11 @@ describe('AuthenticateHandler', function() {
         query: {}
       });
 
-      handler.getTokenFromRequestHeader(request).then(function(bearerToken) {
-        bearerToken.should.equal('foo');
-      });
+      return handler.getTokenFromRequestHeader(request)
+        .then(function(bearerToken) {
+          bearerToken.should.equal('foo');
+        })
+        .catch(should.fail);
     });
   });
 
@@ -265,9 +269,11 @@ describe('AuthenticateHandler', function() {
       };
       var handler = new AuthenticateHandler({ model: model });
 
-      return handler.getAccessToken('foo').then(function(data) {
-        data.should.equal(accessToken);
-      });
+      return handler.getAccessToken('foo')
+        .then(function(data) {
+          data.should.equal(accessToken);
+        })
+        .catch(should.fail);
     });
 
     it('should support promises', function() {
@@ -295,7 +301,7 @@ describe('AuthenticateHandler', function() {
 
   describe('validateAccessToken()', function() {
     it('should throw an error if `accessToken` is expired', function() {
-      var accessToken = { expires: new Date() / 10 };
+      var accessToken = { expires: new Date(new Date() / 2) };
       var handler = new AuthenticateHandler({ model: { getAccessToken: function() {} } });
 
       return handler.validateAccessToken(accessToken)
@@ -310,9 +316,11 @@ describe('AuthenticateHandler', function() {
       var accessToken = { user: {} };
       var handler = new AuthenticateHandler({ model: { getAccessToken: function() {} } });
 
-      return handler.validateAccessToken(accessToken).then(function(data) {
-        data.should.equal(accessToken);
-      });
+      return handler.validateAccessToken(accessToken)
+        .then(function(data) {
+          data.should.equal(accessToken);
+        })
+        .catch(should.fail);
     });
 
     it('should support promises', function() {
