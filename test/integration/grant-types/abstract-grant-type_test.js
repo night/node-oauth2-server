@@ -26,9 +26,20 @@ describe('AbstractGrantType integration', function() {
       }
     });
 
-    it('should throw an error if `options.model` is missing', function() {
+    it('should throw an error if `options.refreshTokenLifetime` is missing', function() {
       try {
         new AbstractGrantType({ accessTokenLifetime: 123 });
+
+        should.fail();
+      } catch (e) {
+        e.should.be.an.instanceOf(InvalidArgumentError);
+        e.message.should.equal('Missing parameter: `refreshTokenLifetime`');
+      }
+    });
+
+    it('should throw an error if `options.model` is missing', function() {
+      try {
+        new AbstractGrantType({ accessTokenLifetime: 123, refreshTokenLifetime: 456 });
 
         should.fail();
       } catch (e) {
@@ -38,14 +49,14 @@ describe('AbstractGrantType integration', function() {
     });
 
     it('should set the `accessTokenLifetime`', function() {
-      var grantType = new AbstractGrantType({ accessTokenLifetime: 123, model: {} });
+      var grantType = new AbstractGrantType({ accessTokenLifetime: 123, refreshTokenLifetime: 456, model: {} });
 
       grantType.accessTokenLifetime.should.equal(123);
     });
 
     it('should set the `model`', function() {
       var model = {};
-      var grantType = new AbstractGrantType({ accessTokenLifetime: 123, model: model });
+      var grantType = new AbstractGrantType({ accessTokenLifetime: 123, refreshTokenLifetime: 456, model: model });
 
       grantType.model.should.equal(model);
     });

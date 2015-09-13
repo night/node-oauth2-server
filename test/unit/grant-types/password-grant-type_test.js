@@ -19,7 +19,7 @@ describe('PasswordGrantType', function() {
         getUser: sinon.stub().returns(true),
         saveToken: function() {}
       };
-      var handler = new PasswordGrantType({ accessTokenLifetime: 120, model: model });
+      var handler = new PasswordGrantType({ accessTokenLifetime: 120, refreshTokenLifetime: 456, model: model });
       var request = new Request({ body: { username: 'foo', password: 'bar' }, headers: {}, method: {}, query: {} });
 
       return handler.getUser(request)
@@ -41,7 +41,7 @@ describe('PasswordGrantType', function() {
         getUser: function() {},
         saveToken: sinon.stub().returns(true)
       };
-      var handler = new PasswordGrantType({ accessTokenLifetime: 120, model: model });
+      var handler = new PasswordGrantType({ accessTokenLifetime: 120, refreshTokenLifetime: 456, model: model });
 
       sinon.stub(handler, 'generateAccessToken').returns('foo');
       sinon.stub(handler, 'generateRefreshToken').returns('bar');

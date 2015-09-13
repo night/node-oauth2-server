@@ -18,7 +18,7 @@ describe('ClientCredentialsGrantType', function() {
         getUserFromClient: sinon.stub().returns(true),
         saveToken: function() {}
       };
-      var handler = new ClientCredentialsGrantType({ accessTokenLifetime: 120, model: model });
+      var handler = new ClientCredentialsGrantType({ accessTokenLifetime: 120, refreshTokenLifetime: 456, model: model });
       var client = {};
 
       return handler.getUserFromClient(client)
@@ -39,7 +39,7 @@ describe('ClientCredentialsGrantType', function() {
         getUserFromClient: function() {},
         saveToken: sinon.stub().returns(true)
       };
-      var handler = new ClientCredentialsGrantType({ accessTokenLifetime: 120, model: model });
+      var handler = new ClientCredentialsGrantType({ accessTokenLifetime: 120, refreshTokenLifetime: 456, model: model });
 
       sinon.stub(handler, 'generateAccessToken').returns('foo');
       sinon.stub(handler, 'generateRefreshToken').returns('bar');

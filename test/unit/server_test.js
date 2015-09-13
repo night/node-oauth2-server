@@ -37,7 +37,9 @@ describe('Server', function() {
       var model = {
         getAccessToken: function() {},
         getClient: function() {},
-        saveAuthorizationCode: function() {}
+        saveAuthorizationCode: function() {},
+        validateScope: function() { return true; },
+        authorizationAllowed: function() { return true; }
       };
       var server = new Server({ model: model });
 

@@ -216,7 +216,8 @@ describe('TokenHandler integration', function() {
           client_secret: 'secret',
           grant_type: 'password',
           password: 'bar',
-          username: 'foo'
+          username: 'foo',
+          redirectUri: 'https://example.com'
         },
         headers: { 'content-type': 'application/x-www-form-urlencoded', 'transfer-encoding': 'chunked' },
         method: 'POST',
@@ -248,7 +249,8 @@ describe('TokenHandler integration', function() {
           client_secret: 'secret',
           grant_type: 'password',
           password: 'bar',
-          username: 'foo'
+          username: 'foo',
+          redirectUri: 'https://example.com'
         },
         headers: { 'content-type': 'application/x-www-form-urlencoded', 'transfer-encoding': 'chunked' },
         method: 'POST',
@@ -267,7 +269,7 @@ describe('TokenHandler integration', function() {
     it('should return a bearer token if successful', function() {
       var token = { accessToken: 'foo', client: {}, refreshToken: 'bar', scope: 'foobar', user: {} };
       var model = {
-        getClient: function() { return { grants: ['password'] }; },
+        getClient: function() { return { grants: ['password'], redirectUri: 'https://example.com' }; },
         getUser: function() { return {}; },
         saveToken: function() { return token; }
       };
@@ -278,7 +280,8 @@ describe('TokenHandler integration', function() {
           client_secret: 'secret',
           username: 'foo',
           password: 'bar',
-          grant_type: 'password'
+          grant_type: 'password',
+          redirectUri: 'https://example.com'
         },
         headers: { 'content-type': 'application/x-www-form-urlencoded', 'transfer-encoding': 'chunked' },
         method: 'POST',
@@ -301,7 +304,7 @@ describe('TokenHandler integration', function() {
         saveToken: function() {}
       };
       var handler = new TokenHandler({ accessTokenLifetime: 120, model: model, refreshTokenLifetime: 120 });
-      var request = new Request({ body: { client_id: 'øå€£‰', client_secret: 'foo' }, headers: {}, method: {}, query: {} });
+      var request = new Request({ body: { client_id: 'øå€£‰', client_secret: 'foo', redirect_uri: 'https://foobar.com' }, headers: {}, method: {}, query: {} });
 
       try {
         handler.getClient(request);
@@ -319,7 +322,7 @@ describe('TokenHandler integration', function() {
         saveToken: function() {}
       };
       var handler = new TokenHandler({ accessTokenLifetime: 120, model: model, refreshTokenLifetime: 120 });
-      var request = new Request({ body: { client_id: 'foo', client_secret: 'øå€£‰' }, headers: {}, method: {}, query: {} });
+      var request = new Request({ body: { client_id: 'foo', client_secret: 'øå€£‰', redirect_uri: 'https://foobar.com' }, headers: {}, method: {}, query: {} });
 
       try {
         handler.getClient(request);
@@ -337,7 +340,7 @@ describe('TokenHandler integration', function() {
         saveToken: function() {}
       };
       var handler = new TokenHandler({ accessTokenLifetime: 120, model: model, refreshTokenLifetime: 120 });
-      var request = new Request({ body: { client_id: 12345, client_secret: 'secret' }, headers: {}, method: {}, query: {} });
+      var request = new Request({ body: { client_id: 12345, client_secret: 'secret', redirect_uri: 'https://foobar.com' }, headers: {}, method: {}, query: {} });
 
       return handler.getClient(request)
         .then(should.fail)
@@ -353,7 +356,7 @@ describe('TokenHandler integration', function() {
         saveToken: function() {}
       };
       var handler = new TokenHandler({ accessTokenLifetime: 120, model: model, refreshTokenLifetime: 120 });
-      var request = new Request({ body: { client_id: 12345, client_secret: 'secret' }, headers: {}, method: {}, query: {} });
+      var request = new Request({ body: { client_id: 12345, client_secret: 'secret', redirect_uri: 'https://foobar.com' }, headers: {}, method: {}, query: {} });
 
       return handler.getClient(request)
         .then(should.fail)
@@ -365,17 +368,65 @@ describe('TokenHandler integration', function() {
 
     it('should throw an error if `client.grants` is invalid', function() {
       var model = {
-        getClient: function() { return { grants: 'foobar' }; },
+        getClient: function() { return { grants: 'foobar', redirectUri: 'https://example.com' }; },
         saveToken: function() {}
       };
       var handler = new TokenHandler({ accessTokenLifetime: 120, model: model, refreshTokenLifetime: 120 });
-      var request = new Request({ body: { client_id: 12345, client_secret: 'secret' }, headers: {}, method: {}, query: {} });
+      var request = new Request({ body: { client_id: 12345, client_secret: 'secret', redirect_uri: 'https://foobar.com' }, headers: {}, method: {}, query: {} });
 
       return handler.getClient(request)
         .then(should.fail)
         .catch(function(e) {
           e.should.be.an.instanceOf(ServerError);
           e.message.should.equal('Server error: `grants` must be an array');
+        });
+    });
+
+    it('should throw an error if `client.redirectUri` is missing', function() {
+      var model = {
+        getClient: function() { return { grants: ['foobar'] }; },
+        saveToken: function() {}
+      };
+      var handler = new TokenHandler({ accessTokenLifetime: 120, model: model, refreshTokenLifetime: 120 });
+      var request = new Request({ body: { client_id: 12345, client_secret: 'secret', redirect_uri: 'https://foobar.com' }, headers: {}, method: {}, query: {} });
+
+      return handler.getClient(request)
+        .then(should.fail)
+        .catch(function(e) {
+          e.should.be.an.instanceOf(InvalidClientError);
+          e.message.should.equal('Invalid client: missing client `redirectUri`');
+        });
+    });
+
+    it('should throw an error if `client.redirectUri` is not equal to `redirectUri`', function() {
+      var model = {
+        getClient: function() { return { grants: ['foobar'], redirectUri: 'https://example.com' }; },
+        saveToken: function() {}
+      };
+      var handler = new TokenHandler({ accessTokenLifetime: 120, model: model, refreshTokenLifetime: 120 });
+      var request = new Request({ body: { client_id: 12345, client_secret: 'secret', redirect_uri: 'https://foobar.com' }, headers: {}, method: {}, query: {} });
+
+      return handler.getClient(request)
+        .then(should.fail)
+        .catch(function(e) {
+          e.should.be.an.instanceOf(InvalidClientError);
+          e.message.should.equal('Invalid client: `redirect_uri` does not match client value');
+        });
+    });
+
+    it('should throw an error if `client.redirectUri` (as an array) does not contain `redirectUri`', function() {
+      var model = {
+        getClient: function() { return { grants: ['foobar'], redirectUri: ['https://example.com'] }; },
+        saveToken: function() {}
+      };
+      var handler = new TokenHandler({ accessTokenLifetime: 120, model: model, refreshTokenLifetime: 120 });
+      var request = new Request({ body: { client_id: 12345, client_secret: 'secret', redirect_uri: 'https://foobar.com' }, headers: {}, method: {}, query: {} });
+
+      return handler.getClient(request)
+        .then(should.fail)
+        .catch(function(e) {
+          e.should.be.an.instanceOf(InvalidClientError);
+          e.message.should.equal('Invalid client: `redirect_uri` does not match client value');
         });
     });
 
@@ -405,7 +456,7 @@ describe('TokenHandler integration', function() {
     });
 
     it('should return a client', function() {
-      var client = { id: 12345, grants: [] };
+      var client = { id: 12345, grants: [], redirectUri: 'https://example.com' };
       var model = {
         getClient: function() { return client; },
         saveToken: function() {}
@@ -422,7 +473,7 @@ describe('TokenHandler integration', function() {
 
     it('should support promises', function() {
       var model = {
-        getClient: function() { return Promise.resolve({ grants: [] }); },
+        getClient: function() { return Promise.resolve({ grants: [], redirectUri: 'https://example.com' }); },
         saveToken: function() {}
       };
       var handler = new TokenHandler({ accessTokenLifetime: 120, model: model, refreshTokenLifetime: 120 });
@@ -433,7 +484,7 @@ describe('TokenHandler integration', function() {
 
     it('should support non-promises', function() {
       var model = {
-        getClient: function() { return { grants: [] }; },
+        getClient: function() { return { grants: [], redirectUri: 'https://example.com' }; },
         saveToken: function() {}
       };
       var handler = new TokenHandler({ accessTokenLifetime: 120, model: model, refreshTokenLifetime: 120 });

@@ -21,7 +21,7 @@ describe('RefreshTokenGrantType', function() {
         saveToken: function() { return { accessToken: 'bar', client: {}, user: {} }; },
         revokeToken: sinon.stub().returns({ accessToken: 'foo', client: {}, refreshTokenExpiresAt: new Date(new Date() / 2), user: {} })
       };
-      var handler = new RefreshTokenGrantType({ accessTokenLifetime: 120, model: model });
+      var handler = new RefreshTokenGrantType({ accessTokenLifetime: 120, refreshTokenLifetime: 456, model: model });
       var request = new Request({ body: { refresh_token: 'bar' }, headers: {}, method: {}, query: {} });
       var client = {};
 
@@ -42,7 +42,7 @@ describe('RefreshTokenGrantType', function() {
         saveToken: function() {},
         revokeToken: function() {}
       };
-      var handler = new RefreshTokenGrantType({ accessTokenLifetime: 120, model: model });
+      var handler = new RefreshTokenGrantType({ accessTokenLifetime: 120, refreshTokenLifetime: 456, model: model });
       var request = new Request({ body: { refresh_token: 'bar' }, headers: {}, method: {}, query: {} });
       var client = {};
 
@@ -63,7 +63,7 @@ describe('RefreshTokenGrantType', function() {
         revokeToken: sinon.stub().returns({ accessToken: 'foo', client: {}, refreshTokenExpiresAt: new Date(new Date() / 2), user: {} }),
         saveToken: function() {}
       };
-      var handler = new RefreshTokenGrantType({ accessTokenLifetime: 120, model: model });
+      var handler = new RefreshTokenGrantType({ accessTokenLifetime: 120, refreshTokenLifetime: 456, model: model });
       var token = {};
 
       return handler.revokeToken(token)
@@ -85,7 +85,7 @@ describe('RefreshTokenGrantType', function() {
         revokeToken: function() {},
         saveToken: sinon.stub().returns(true)
       };
-      var handler = new RefreshTokenGrantType({ accessTokenLifetime: 120, model: model });
+      var handler = new RefreshTokenGrantType({ accessTokenLifetime: 120, refreshTokenLifetime: 456, model: model });
 
       sinon.stub(handler, 'generateAccessToken').returns('foo');
       sinon.stub(handler, 'generateRefreshToken').returns('bar');

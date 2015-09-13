@@ -93,7 +93,9 @@ describe('Server integration', function() {
         },
         saveAuthorizationCode: function() {
           return { authorizationCode: 123 };
-        }
+        },
+        validateScope: function() { return true; },
+        authorizationAllowed: function() { return true; }
       };
       var server = new Server({ model: model });
       var request = new Request({ body: { client_id: 1234, client_secret: 'secret', response_type: 'code' }, headers: { 'Authorization': 'Bearer foo' }, method: {}, query: { state: 'foobar' } });
@@ -116,7 +118,9 @@ describe('Server integration', function() {
         },
         saveAuthorizationCode: function() {
           return { authorizationCode: 123 };
-        }
+        },
+        validateScope: function() { return true; },
+        authorizationAllowed: function() { return true; }
       };
       var server = new Server({ model: model });
       var request = new Request({ body: { client_id: 1234, client_secret: 'secret', response_type: 'code' }, headers: { 'Authorization': 'Bearer foo' }, method: {}, query: { state: 'foobar' } });
@@ -136,7 +140,9 @@ describe('Server integration', function() {
         },
         saveAuthorizationCode: function() {
           return { authorizationCode: 123 };
-        }
+        },
+        validateScope: function() { return true; },
+        authorizationAllowed: function() { return true; }
       };
       var server = new Server({ model: model });
       var request = new Request({ body: { client_id: 1234, client_secret: 'secret', response_type: 'code' }, headers: { 'Authorization': 'Bearer foo' }, method: {}, query: { state: 'foobar' } });
@@ -150,7 +156,7 @@ describe('Server integration', function() {
     it('should set the default `options`', function() {
       var model = {
         getClient: function() {
-          return { grants: ['password'] };
+          return { grants: ['password'], redirectUri: 'http://example.com/cb' };
         },
         getUser: function() {
           return {};
@@ -160,7 +166,7 @@ describe('Server integration', function() {
         }
       };
       var server = new Server({ model: model });
-      var request = new Request({ body: { client_id: 1234, client_secret: 'secret', grant_type: 'password', username: 'foo', password: 'pass' }, headers: { 'content-type': 'application/x-www-form-urlencoded', 'transfer-encoding': 'chunked' }, method: 'POST', query: {} });
+      var request = new Request({ body: { client_id: 1234, client_secret: 'secret', grant_type: 'password', username: 'foo', password: 'pass', redirect_uri: 'http://example.com/cb' }, headers: { 'content-type': 'application/x-www-form-urlencoded', 'transfer-encoding': 'chunked' }, method: 'POST', query: {} });
       var response = new Response({ body: {}, headers: {} });
 
       return server.token(request, response)
@@ -174,7 +180,7 @@ describe('Server integration', function() {
     it('should return a promise', function() {
       var model = {
         getClient: function() {
-          return { grants: ['password'] };
+          return { grants: ['password'], redirectUri: 'http://example.com/cb' };
         },
         getUser: function() {
           return {};
@@ -194,7 +200,7 @@ describe('Server integration', function() {
     it('should support callbacks', function(next) {
       var model = {
         getClient: function() {
-          return { grants: ['password'] };
+          return { grants: ['password'], redirectUri: 'http://example.com/cb' };
         },
         getUser: function() {
           return {};

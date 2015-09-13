@@ -16,11 +16,11 @@ describe('TokenHandler', function() {
   describe('getClient()', function() {
     it('should call `model.getClient()`', function() {
       var model = {
-        getClient: sinon.stub().returns({ grants: ['password'] }),
+        getClient: sinon.stub().returns({ grants: ['password'], redirectUri: 'http://example.com/cb' }),
         saveToken: function() {}
       };
       var handler = new TokenHandler({ accessTokenLifetime: 120, model: model, refreshTokenLifetime: 120 });
-      var request = new Request({ body: { client_id: 12345, client_secret: 'secret' }, headers: {}, method: {}, query: {} });
+      var request = new Request({ body: { client_id: 12345, client_secret: 'secret', redirect_uri: 'http://example.com/cb' }, headers: {}, method: {}, query: {} });
 
       return handler.getClient(request)
         .then(function() {

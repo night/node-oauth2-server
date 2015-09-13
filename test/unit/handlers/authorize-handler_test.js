@@ -19,7 +19,9 @@ describe('AuthorizeHandler', function() {
         generateAuthorizationCode: sinon.stub().returns({}),
         getAccessToken: function() {},
         getClient: function() {},
-        saveAuthorizationCode: function() {}
+        saveAuthorizationCode: function() {},
+        validateScope: function() { return true; },
+        authorizationAllowed: function() { return true; }
       };
       var handler = new AuthorizeHandler({ authorizationCodeLifetime: 120, model: model });
 
@@ -36,7 +38,9 @@ describe('AuthorizeHandler', function() {
       var model = {
         getAccessToken: function() {},
         getClient: sinon.stub().returns({ grants: ['authorization_code'], redirectUri: 'http://example.com/cb' }),
-        saveAuthorizationCode: function() {}
+        saveAuthorizationCode: function() {},
+        validateScope: function() { return true; },
+        authorizationAllowed: function() { return true; }
       };
       var handler = new AuthorizeHandler({ authorizationCodeLifetime: 120, model: model });
       var request = new Request({ body: { client_id: 12345, client_secret: 'secret' }, headers: {}, method: {}, query: {} });
@@ -56,6 +60,8 @@ describe('AuthorizeHandler', function() {
       var model = {
         getAccessToken: function() {},
         getClient: function() {},
+        validateScope: function() { return true; },
+        authorizationAllowed: function() { return true; },
         saveAuthorizationCode: sinon.stub().returns({})
       };
       var handler = new AuthorizeHandler({ authorizationCodeLifetime: 120, model: model });

@@ -18,7 +18,7 @@ describe('ClientCredentialsGrantType integration', function() {
   describe('constructor()', function() {
     it('should throw an error if `model` is missing', function() {
       try {
-        new ClientCredentialsGrantType();
+        new ClientCredentialsGrantType({ accessTokenLifetime: 123, refreshTokenLifetime: 456 });
 
         should.fail();
       } catch (e) {
@@ -29,7 +29,7 @@ describe('ClientCredentialsGrantType integration', function() {
 
     it('should throw an error if the model does not implement `getUserFromClient()`', function() {
       try {
-        new ClientCredentialsGrantType({ model: {} });
+        new ClientCredentialsGrantType({ accessTokenLifetime: 123, refreshTokenLifetime: 456, model: {} });
 
         should.fail();
       } catch (e) {
@@ -44,7 +44,7 @@ describe('ClientCredentialsGrantType integration', function() {
           getUserFromClient: function() {}
         };
 
-        new ClientCredentialsGrantType({ model: model });
+        new ClientCredentialsGrantType({ accessTokenLifetime: 123, refreshTokenLifetime: 456, model: model });
 
         should.fail();
       } catch (e) {
@@ -60,7 +60,7 @@ describe('ClientCredentialsGrantType integration', function() {
         getUserFromClient: function() {},
         saveToken: function() {}
       };
-      var grantType = new ClientCredentialsGrantType({ accessTokenLifetime: 120, model: model });
+      var grantType = new ClientCredentialsGrantType({ accessTokenLifetime: 120, refreshTokenLifetime: 456, model: model });
 
       try {
         grantType.handle();
@@ -77,7 +77,7 @@ describe('ClientCredentialsGrantType integration', function() {
         getUserFromClient: function() {},
         saveToken: function() {}
       };
-      var grantType = new ClientCredentialsGrantType({ accessTokenLifetime: 120, model: model });
+      var grantType = new ClientCredentialsGrantType({ accessTokenLifetime: 120, refreshTokenLifetime: 456, model: model });
       var request = new Request({ body: {}, headers: {}, method: {}, query: {} });
 
       try {
@@ -96,7 +96,7 @@ describe('ClientCredentialsGrantType integration', function() {
         getUserFromClient: function() { return {}; },
         saveToken: function() { return token; }
       };
-      var grantType = new ClientCredentialsGrantType({ accessTokenLifetime: 120, model: model });
+      var grantType = new ClientCredentialsGrantType({ accessTokenLifetime: 120, refreshTokenLifetime: 456, model: model });
       var request = new Request({ body: {}, headers: {}, method: {}, query: {} });
 
       return grantType.handle(request, {})
@@ -112,7 +112,7 @@ describe('ClientCredentialsGrantType integration', function() {
         getUserFromClient: function() { return {}; },
         saveToken: function() { return token; }
       };
-      var grantType = new ClientCredentialsGrantType({ accessTokenLifetime: 120, model: model });
+      var grantType = new ClientCredentialsGrantType({ accessTokenLifetime: 120, refreshTokenLifetime: 456, model: model });
       var request = new Request({ body: {}, headers: {}, method: {}, query: {} });
 
       grantType.handle(request, {}).should.be.an.instanceOf(Promise);
@@ -124,7 +124,7 @@ describe('ClientCredentialsGrantType integration', function() {
         getUserFromClient: function() { return {}; },
         saveToken: function() { return token; }
       };
-      var grantType = new ClientCredentialsGrantType({ accessTokenLifetime: 120, model: model });
+      var grantType = new ClientCredentialsGrantType({ accessTokenLifetime: 120, refreshTokenLifetime: 456, model: model });
       var request = new Request({ body: {}, headers: {}, method: {}, query: {} });
 
       grantType.handle(request, {}).should.be.an.instanceOf(Promise);
@@ -137,7 +137,7 @@ describe('ClientCredentialsGrantType integration', function() {
         getUserFromClient: function() {},
         saveToken: function() {}
       };
-      var grantType = new ClientCredentialsGrantType({ accessTokenLifetime: 120, model: model });
+      var grantType = new ClientCredentialsGrantType({ accessTokenLifetime: 120, refreshTokenLifetime: 456, model: model });
       var request = new Request({ body: {}, headers: {}, method: {}, query: {} });
 
       return grantType.getUserFromClient(request, {})
@@ -154,7 +154,7 @@ describe('ClientCredentialsGrantType integration', function() {
         getUserFromClient: function() { return user; },
         saveToken: function() {}
       };
-      var grantType = new ClientCredentialsGrantType({ accessTokenLifetime: 120, model: model });
+      var grantType = new ClientCredentialsGrantType({ accessTokenLifetime: 120, refreshTokenLifetime: 456, model: model });
       var request = new Request({ body: {}, headers: {}, method: {}, query: {} });
 
       return grantType.getUserFromClient(request, {})
@@ -170,7 +170,7 @@ describe('ClientCredentialsGrantType integration', function() {
         getUserFromClient: function() { return Promise.resolve(user); },
         saveToken: function() {}
       };
-      var grantType = new ClientCredentialsGrantType({ accessTokenLifetime: 120, model: model });
+      var grantType = new ClientCredentialsGrantType({ accessTokenLifetime: 120, refreshTokenLifetime: 456, model: model });
       var request = new Request({ body: {}, headers: {}, method: {}, query: {} });
 
       grantType.getUserFromClient(request, {}).should.be.an.instanceOf(Promise);
@@ -182,7 +182,7 @@ describe('ClientCredentialsGrantType integration', function() {
         getUserFromClient: function() {return user; },
         saveToken: function() {}
       };
-      var grantType = new ClientCredentialsGrantType({ accessTokenLifetime: 120, model: model });
+      var grantType = new ClientCredentialsGrantType({ accessTokenLifetime: 120, refreshTokenLifetime: 456, model: model });
       var request = new Request({ body: {}, headers: {}, method: {}, query: {} });
 
       grantType.getUserFromClient(request, {}).should.be.an.instanceOf(Promise);
@@ -196,7 +196,7 @@ describe('ClientCredentialsGrantType integration', function() {
         getUserFromClient: function() {},
         saveToken: function() { return token; }
       };
-      var grantType = new ClientCredentialsGrantType({ accessTokenLifetime: 123, model: model });
+      var grantType = new ClientCredentialsGrantType({ accessTokenLifetime: 123, refreshTokenLifetime: 456, model: model });
 
       return grantType.saveToken(token)
         .then(function(data) {
@@ -211,7 +211,7 @@ describe('ClientCredentialsGrantType integration', function() {
         getUserFromClient: function() {},
         saveToken: function() { return Promise.resolve(token); }
       };
-      var grantType = new ClientCredentialsGrantType({ accessTokenLifetime: 123, model: model });
+      var grantType = new ClientCredentialsGrantType({ accessTokenLifetime: 123, refreshTokenLifetime: 456, model: model });
 
       grantType.saveToken(token).should.be.an.instanceOf(Promise);
     });
@@ -222,7 +222,7 @@ describe('ClientCredentialsGrantType integration', function() {
         getUserFromClient: function() {},
         saveToken: function() { return token; }
       };
-      var grantType = new ClientCredentialsGrantType({ accessTokenLifetime: 123, model: model });
+      var grantType = new ClientCredentialsGrantType({ accessTokenLifetime: 123, refreshTokenLifetime: 456, model: model });
 
       grantType.saveToken(token).should.be.an.instanceOf(Promise);
     });
