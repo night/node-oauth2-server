@@ -68,10 +68,27 @@ describe('AuthorizeHandler integration', function() {
       }
     });
 
-    it('should throw an error if the model does not implement `validateScope()`', function() {
+    it('should throw an error if the model does not implement `saveToken()`', function() {
       var model = {
         getClient: function() {},
         saveAuthorizationCode: function() {}
+      };
+
+      try {
+        new AuthorizeHandler({ authorizationCodeLifetime: 120, model: model });
+
+        should.fail();
+      } catch (e) {
+        e.should.be.an.instanceOf(InvalidArgumentError);
+        e.message.should.equal('Invalid argument: model does not implement `saveToken()`');
+      }
+    });
+
+    it('should throw an error if the model does not implement `validateScope()`', function() {
+      var model = {
+        getClient: function() {},
+        saveAuthorizationCode: function() {},
+        saveToken: function() {}
       };
 
       try {
@@ -88,7 +105,8 @@ describe('AuthorizeHandler integration', function() {
       var model = {
         getClient: function() {},
         saveAuthorizationCode: function() {},
-        validateScope: function() {}
+        validateScope: function() {},
+        saveToken: function() {}
       };
 
       try {
@@ -106,7 +124,8 @@ describe('AuthorizeHandler integration', function() {
         getClient: function() {},
         saveAuthorizationCode: function() {},
         validateScope: function() {},
-        authorizationAllowed: function() {}
+        authorizationAllowed: function() {},
+        saveToken: function() {}
       };
 
       try {
@@ -125,7 +144,8 @@ describe('AuthorizeHandler integration', function() {
         getClient: function() {},
         saveAuthorizationCode: function() {},
         validateScope: function() {},
-        authorizationAllowed: function() {}
+        authorizationAllowed: function() {},
+        saveToken: function() {}
       };
       var handler = new AuthorizeHandler({ authorizationCodeLifetime: 120, model: model });
 
@@ -138,7 +158,8 @@ describe('AuthorizeHandler integration', function() {
         getClient: function() {},
         saveAuthorizationCode: function() {},
         validateScope: function() {},
-        authorizationAllowed: function() {}
+        authorizationAllowed: function() {},
+        saveToken: function() {}
       };
       var handler = new AuthorizeHandler({ authorizationCodeLifetime: 120, model: model });
 
@@ -151,7 +172,8 @@ describe('AuthorizeHandler integration', function() {
         getClient: function() {},
         saveAuthorizationCode: function() {},
         validateScope: function() {},
-        authorizationAllowed: function() {}
+        authorizationAllowed: function() {},
+        saveToken: function() {}
       };
       var handler = new AuthorizeHandler({ authorizationCodeLifetime: 120, model: model });
 
@@ -166,7 +188,8 @@ describe('AuthorizeHandler integration', function() {
         getClient: function() {},
         saveAuthorizationCode: function() {},
         validateScope: function() {},
-        authorizationAllowed: function() {}
+        authorizationAllowed: function() {},
+        saveToken: function() {}
       };
       var handler = new AuthorizeHandler({ authorizationCodeLifetime: 120, model: model });
 
@@ -186,7 +209,8 @@ describe('AuthorizeHandler integration', function() {
         getClient: function() {},
         saveAuthorizationCode: function() {},
         validateScope: function() {},
-        authorizationAllowed: function() {}
+        authorizationAllowed: function() {},
+        saveToken: function() {}
       };
       var handler = new AuthorizeHandler({ authorizationCodeLifetime: 120, model: model });
       var request = new Request({ body: {}, headers: {}, method: {}, query: {} });
@@ -213,7 +237,8 @@ describe('AuthorizeHandler integration', function() {
           throw new Error('Unhandled exception');
         },
         validateScope: function() { return true; },
-        authorizationAllowed: function() { return true; }
+        authorizationAllowed: function() { return true; },
+        saveToken: function() {}
       };
       var handler = new AuthorizeHandler({ authorizationCodeLifetime: 120, model: model });
       var request = new Request({
@@ -250,7 +275,8 @@ describe('AuthorizeHandler integration', function() {
           throw new AccessDeniedError('Cannot request this auth code');
         },
         validateScope: function() { return true; },
-        authorizationAllowed: function() { return true; }
+        authorizationAllowed: function() { return true; },
+        saveToken: function() {}
       };
       var handler = new AuthorizeHandler({ authorizationCodeLifetime: 120, model: model });
       var request = new Request({
@@ -288,7 +314,8 @@ describe('AuthorizeHandler integration', function() {
           return { authorizationCode: 12345, client: client };
         },
         validateScope: function() { return true; },
-        authorizationAllowed: function() { return true; }
+        authorizationAllowed: function() { return true; },
+        saveToken: function() {}
       };
       var handler = new AuthorizeHandler({ authorizationCodeLifetime: 120, model: model });
       var request = new Request({
@@ -325,7 +352,8 @@ describe('AuthorizeHandler integration', function() {
           return {};
         },
         validateScope: function() { return false; },
-        authorizationAllowed: function() { return true; }
+        authorizationAllowed: function() { return true; },
+        saveToken: function() {}
       };
       var handler = new AuthorizeHandler({ authorizationCodeLifetime: 120, model: model });
       var request = new Request({
@@ -363,7 +391,8 @@ describe('AuthorizeHandler integration', function() {
           throw new AccessDeniedError('Cannot request this auth code');
         },
         validateScope: function() { return true; },
-        authorizationAllowed: function() { return true; }
+        authorizationAllowed: function() { return true; },
+        saveToken: function() {}
       };
       var handler = new AuthorizeHandler({ authorizationCodeLifetime: 120, model: model });
       var request = new Request({
@@ -386,7 +415,7 @@ describe('AuthorizeHandler integration', function() {
         });
     });
 
-    it('should return the `code` if successful', function() {
+    it('should return the `redirectU` if successful', function() {
       var client = { grants: ['authorization_code'], redirectUri: 'http://example.com/cb' };
       var model = {
         getAccessToken: function() {
@@ -399,7 +428,8 @@ describe('AuthorizeHandler integration', function() {
           return { authorizationCode: 12345, client: client };
         },
         validateScope: function() { return true; },
-        authorizationAllowed: function() { return true; }
+        authorizationAllowed: function() { return true; },
+        saveToken: function() {}
       };
       var handler = new AuthorizeHandler({ authorizationCodeLifetime: 120, model: model });
       var request = new Request({
@@ -428,72 +458,6 @@ describe('AuthorizeHandler integration', function() {
     });
   });
 
-  describe('generateAuthorizationCode()', function() {
-    it('should return an auth code', function() {
-      var model = {
-        getAccessToken: function() {},
-        getClient: function() {},
-        saveAuthorizationCode: function() {},
-        validateScope: function() { return true; },
-        authorizationAllowed: function() { return true; }
-      };
-      var handler = new AuthorizeHandler({ authorizationCodeLifetime: 120, model: model });
-
-      return handler.generateAuthorizationCode()
-        .then(function(data) {
-          data.should.be.a.sha1;
-        })
-        .catch(should.fail);
-    });
-
-    it('should support promises', function() {
-      var model = {
-        generateAuthorizationCode: function() {
-          return Promise.resolve({});
-        },
-        getAccessToken: function() {},
-        getClient: function() {},
-        saveAuthorizationCode: function() {},
-        validateScope: function() { return true; },
-        authorizationAllowed: function() { return true; }
-      };
-      var handler = new AuthorizeHandler({ authorizationCodeLifetime: 120, model: model });
-
-      handler.generateAuthorizationCode().should.be.an.instanceOf(Promise);
-    });
-
-    it('should support non-promises', function() {
-      var model = {
-        generateAuthorizationCode: function() {
-          return {};
-        },
-        getAccessToken: function() {},
-        getClient: function() {},
-        saveAuthorizationCode: function() {},
-        validateScope: function() { return true; },
-        authorizationAllowed: function() { return true; }
-      };
-      var handler = new AuthorizeHandler({ authorizationCodeLifetime: 120, model: model });
-
-      handler.generateAuthorizationCode().should.be.an.instanceOf(Promise);
-    });
-  });
-
-  describe('getAuthorizationCodeLifetime()', function() {
-    it('should return a date', function() {
-      var model = {
-        getAccessToken: function() {},
-        getClient: function() {},
-        saveAuthorizationCode: function() {},
-        validateScope: function() { return true; },
-        authorizationAllowed: function() { return true; }
-      };
-      var handler = new AuthorizeHandler({ authorizationCodeLifetime: 120, model: model });
-
-      handler.getAuthorizationCodeLifetime().should.be.an.instanceOf(Date);
-    });
-  });
-
   describe('getClient()', function() {
     it('should throw an error if `client_id` is missing', function() {
       var model = {
@@ -501,7 +465,8 @@ describe('AuthorizeHandler integration', function() {
         getClient: function() {},
         saveAuthorizationCode: function() {},
         validateScope: function() { return true; },
-        authorizationAllowed: function() { return true; }
+        authorizationAllowed: function() { return true; },
+        saveToken: function() {}
       };
       var handler = new AuthorizeHandler({ authorizationCodeLifetime: 120, model: model });
       var request = new Request({ body: { response_type: 'code' }, headers: {}, method: {}, query: {} });
@@ -522,7 +487,8 @@ describe('AuthorizeHandler integration', function() {
         getClient: function() {},
         saveAuthorizationCode: function() {},
         validateScope: function() { return true; },
-        authorizationAllowed: function() { return true; }
+        authorizationAllowed: function() { return true; },
+        saveToken: function() {}
       };
       var handler = new AuthorizeHandler({ authorizationCodeLifetime: 120, model: model });
       var request = new Request({ body: { client_id: 'øå€£‰', response_type: 'code' }, headers: {}, method: {}, query: {} });
@@ -543,7 +509,8 @@ describe('AuthorizeHandler integration', function() {
         getClient: function() {},
         saveAuthorizationCode: function() {},
         validateScope: function() { return true; },
-        authorizationAllowed: function() { return true; }
+        authorizationAllowed: function() { return true; },
+        saveToken: function() {}
       };
       var handler = new AuthorizeHandler({ authorizationCodeLifetime: 120, model: model });
       var request = new Request({ body: { client_id: 12345, response_type: 'code', redirect_uri: 'foobar' }, headers: {}, method: {}, query: {} });
@@ -564,7 +531,8 @@ describe('AuthorizeHandler integration', function() {
         getClient: function() {},
         saveAuthorizationCode: function() {},
         validateScope: function() { return true; },
-        authorizationAllowed: function() { return true; }
+        authorizationAllowed: function() { return true; },
+        saveToken: function() {}
       };
       var handler = new AuthorizeHandler({ authorizationCodeLifetime: 120, model: model });
       var request = new Request({ body: { client_id: 12345, response_type: 'code' }, headers: {}, method: {}, query: {} });
@@ -583,7 +551,8 @@ describe('AuthorizeHandler integration', function() {
         getClient: function() {},
         saveAuthorizationCode: function() {},
         validateScope: function() { return true; },
-        authorizationAllowed: function() { return true; }
+        authorizationAllowed: function() { return true; },
+        saveToken: function() {}
       };
       var handler = new AuthorizeHandler({ authorizationCodeLifetime: 120, model: model });
       var request = new Request({ body: { client_id: 12345, response_type: 'code' }, headers: {}, method: {}, query: {} });
@@ -604,7 +573,8 @@ describe('AuthorizeHandler integration', function() {
         },
         saveAuthorizationCode: function() {},
         validateScope: function() { return true; },
-        authorizationAllowed: function() { return true; }
+        authorizationAllowed: function() { return true; },
+        saveToken: function() {}
       };
       var handler = new AuthorizeHandler({ authorizationCodeLifetime: 120, model: model });
       var request = new Request({ body: { client_id: 12345, response_type: 'code' }, headers: {}, method: {}, query: {} });
@@ -625,7 +595,8 @@ describe('AuthorizeHandler integration', function() {
         },
         saveAuthorizationCode: function() {},
         validateScope: function() { return true; },
-        authorizationAllowed: function() { return true; }
+        authorizationAllowed: function() { return true; },
+        saveToken: function() {}
       };
       var handler = new AuthorizeHandler({ authorizationCodeLifetime: 120, model: model });
       var request = new Request({ body: { client_id: 12345, response_type: 'code' }, headers: {}, method: {}, query: {} });
@@ -644,7 +615,8 @@ describe('AuthorizeHandler integration', function() {
         getClient: function() { return { grants: ['authorization_code'] }; },
         saveAuthorizationCode: function() {},
         validateScope: function() { return true; },
-        authorizationAllowed: function() { return true; }
+        authorizationAllowed: function() { return true; },
+        saveToken: function() {}
       };
       var handler = new AuthorizeHandler({ authorizationCodeLifetime: 120, model: model });
       var request = new Request({ body: { client_id: 12345, response_type: 'code' }, headers: {}, method: {}, query: {} });
@@ -665,7 +637,8 @@ describe('AuthorizeHandler integration', function() {
         },
         saveAuthorizationCode: function() {},
         validateScope: function() { return true; },
-        authorizationAllowed: function() { return true; }
+        authorizationAllowed: function() { return true; },
+        saveToken: function() {}
       };
       var handler = new AuthorizeHandler({ authorizationCodeLifetime: 120, model: model });
       var request = new Request({ body: { client_id: 12345, response_type: 'code', redirect_uri: 'https://foobar.com' }, headers: {}, method: {}, query: {} });
@@ -686,7 +659,8 @@ describe('AuthorizeHandler integration', function() {
         },
         saveAuthorizationCode: function() {},
         validateScope: function() { return true; },
-        authorizationAllowed: function() { return true; }
+        authorizationAllowed: function() { return true; },
+        saveToken: function() {}
       };
       var handler = new AuthorizeHandler({ authorizationCodeLifetime: 120, model: model });
       var request = new Request({ body: { client_id: 12345, response_type: 'code', redirect_uri: 'https://foobar.com' }, headers: {}, method: {}, query: {} });
@@ -707,7 +681,8 @@ describe('AuthorizeHandler integration', function() {
         },
         saveAuthorizationCode: function() {},
         validateScope: function() { return true; },
-        authorizationAllowed: function() { return true; }
+        authorizationAllowed: function() { return true; },
+        saveToken: function() {}
       };
       var handler = new AuthorizeHandler({ authorizationCodeLifetime: 120, model: model });
       var request = new Request({
@@ -728,7 +703,8 @@ describe('AuthorizeHandler integration', function() {
         },
         saveAuthorizationCode: function() {},
         validateScope: function() { return true; },
-        authorizationAllowed: function() { return true; }
+        authorizationAllowed: function() { return true; },
+        saveToken: function() {}
       };
       var handler = new AuthorizeHandler({ authorizationCodeLifetime: 120, model: model });
       var request = new Request({
@@ -751,7 +727,8 @@ describe('AuthorizeHandler integration', function() {
           },
           saveAuthorizationCode: function() {},
           validateScope: function() { return true; },
-          authorizationAllowed: function() { return true; }
+          authorizationAllowed: function() { return true; },
+          saveToken: function() {}
         };
         var handler = new AuthorizeHandler({ authorizationCodeLifetime: 120, model: model });
         var request = new Request({ body: { client_id: 12345, response_type: 'code' }, headers: {}, method: {}, query: {} });
@@ -774,7 +751,8 @@ describe('AuthorizeHandler integration', function() {
           },
           saveAuthorizationCode: function() {},
           validateScope: function() { return true; },
-          authorizationAllowed: function() { return true; }
+          authorizationAllowed: function() { return true; },
+          saveToken: function() {}
         };
         var handler = new AuthorizeHandler({ authorizationCodeLifetime: 120, model: model });
         var request = new Request({ body: { response_type: 'code' }, headers: {}, method: {}, query: { client_id: 12345 } });
@@ -795,7 +773,8 @@ describe('AuthorizeHandler integration', function() {
         getClient: function() {},
         saveAuthorizationCode: function() {},
         validateScope: function() { return true; },
-        authorizationAllowed: function() { return true; }
+        authorizationAllowed: function() { return true; },
+        saveToken: function() {}
       };
       var handler = new AuthorizeHandler({ authorizationCodeLifetime: 120, model: model });
       var request = new Request({ body: { scope: 'øå€£‰' }, headers: {}, method: {}, query: {} });
@@ -817,7 +796,8 @@ describe('AuthorizeHandler integration', function() {
           getClient: function() {},
           saveAuthorizationCode: function() {},
           validateScope: function() { return true; },
-          authorizationAllowed: function() { return true; }
+          authorizationAllowed: function() { return true; },
+          saveToken: function() {}
         };
         var handler = new AuthorizeHandler({ authorizationCodeLifetime: 120, model: model });
         var request = new Request({ body: { scope: 'foo' }, headers: {}, method: {}, query: {} });
@@ -833,7 +813,8 @@ describe('AuthorizeHandler integration', function() {
           getClient: function() {},
           saveAuthorizationCode: function() {},
           validateScope: function() { return true; },
-          authorizationAllowed: function() { return true; }
+          authorizationAllowed: function() { return true; },
+          saveToken: function() {}
         };
         var handler = new AuthorizeHandler({ authorizationCodeLifetime: 120, model: model });
         var request = new Request({ body: {}, headers: {}, method: {}, query: { scope: 'foo' } });
@@ -850,7 +831,8 @@ describe('AuthorizeHandler integration', function() {
         getClient: function() {},
         saveAuthorizationCode: function() {},
         validateScope: function() { return true; },
-        authorizationAllowed: function() { return true; }
+        authorizationAllowed: function() { return true; },
+        saveToken: function() {}
       };
       var handler = new AuthorizeHandler({ authorizationCodeLifetime: 120, model: model });
       var request = new Request({ body: {}, headers: {}, method: {}, query: {} });
@@ -871,7 +853,8 @@ describe('AuthorizeHandler integration', function() {
         getClient: function() {},
         saveAuthorizationCode: function() {},
         validateScope: function() { return true; },
-        authorizationAllowed: function() { return true; }
+        authorizationAllowed: function() { return true; },
+        saveToken: function() {}
       };
       var handler = new AuthorizeHandler({ authorizationCodeLifetime: 120, model: model });
       var request = new Request({ body: {}, headers: {}, method: {}, query: { state: 'øå€£‰' } });
@@ -893,7 +876,8 @@ describe('AuthorizeHandler integration', function() {
           getClient: function() {},
           saveAuthorizationCode: function() {},
           validateScope: function() { return true; },
-          authorizationAllowed: function() { return true; }
+          authorizationAllowed: function() { return true; },
+        saveToken: function() {}
         };
         var handler = new AuthorizeHandler({ authorizationCodeLifetime: 120, model: model });
         var request = new Request({ body: { state: 'foobar' }, headers: {}, method: {}, query: {} });
@@ -909,7 +893,8 @@ describe('AuthorizeHandler integration', function() {
           getClient: function() {},
           saveAuthorizationCode: function() {},
           validateScope: function() { return true; },
-          authorizationAllowed: function() { return true; }
+          authorizationAllowed: function() { return true; },
+          saveToken: function() {}
         };
         var handler = new AuthorizeHandler({ authorizationCodeLifetime: 120, model: model });
         var request = new Request({ body: {}, headers: {}, method: {}, query: { state: 'foobar' } });
@@ -929,7 +914,8 @@ describe('AuthorizeHandler integration', function() {
         getClient: function() {},
         saveAuthorizationCode: function() {},
         validateScope: function() { return true; },
-        authorizationAllowed: function() { return true; }
+        authorizationAllowed: function() { return true; },
+        saveToken: function() {}
       };
       var handler = new AuthorizeHandler({ authorizationCodeLifetime: 120, model: model });
       var request = new Request({ body: {}, headers: { 'Authorization': 'Bearer foo' }, method: {}, query: {} });
@@ -943,58 +929,6 @@ describe('AuthorizeHandler integration', function() {
     });
   });
 
-  describe('saveAuthorizationCode()', function() {
-    it('should return an auth code', function() {
-      var authorizationCode = {};
-      var model = {
-        getAccessToken: function() {},
-        getClient: function() {},
-        saveAuthorizationCode: function() {
-          return authorizationCode;
-        },
-        validateScope: function() { return true; },
-        authorizationAllowed: function() { return true; }
-      };
-      var handler = new AuthorizeHandler({ authorizationCodeLifetime: 120, model: model });
-
-      return handler.saveAuthorizationCode('foo', 'bar', 'biz', 'baz')
-        .then(function(data) {
-          data.should.equal(authorizationCode);
-        })
-        .catch(should.fail);
-    });
-
-    it('should support promises when calling `model.saveAuthorizationCode()`', function() {
-      var model = {
-        getAccessToken: function() {},
-        getClient: function() {},
-        saveAuthorizationCode: function() {
-          return Promise.resolve({});
-        },
-        validateScope: function() { return true; },
-        authorizationAllowed: function() { return true; }
-      };
-      var handler = new AuthorizeHandler({ authorizationCodeLifetime: 120, model: model });
-
-      handler.saveAuthorizationCode('foo', 'bar', 'biz', 'baz').should.be.an.instanceOf(Promise);
-    });
-
-    it('should support non-promises when calling `model.saveAuthorizationCode()`', function() {
-      var model = {
-        getAccessToken: function() {},
-        getClient: function() {},
-        saveAuthorizationCode: function() {
-          return {};
-        },
-        validateScope: function() { return true; },
-        authorizationAllowed: function() { return true; }
-      };
-      var handler = new AuthorizeHandler({ authorizationCodeLifetime: 120, model: model });
-
-      handler.saveAuthorizationCode('foo', 'bar', 'biz', 'baz').should.be.an.instanceOf(Promise);
-    });
-  });
-
   describe('getResponseType()', function() {
     it('should throw an error if `response_type` is missing', function() {
       var model = {
@@ -1002,7 +936,8 @@ describe('AuthorizeHandler integration', function() {
         getClient: function() {},
         saveAuthorizationCode: function() {},
         validateScope: function() { return true; },
-        authorizationAllowed: function() { return true; }
+        authorizationAllowed: function() { return true; },
+        saveToken: function() {}
       };
       var handler = new AuthorizeHandler({ authorizationCodeLifetime: 120, model: model });
       var request = new Request({ body: {}, headers: {}, method: {}, query: {} });
@@ -1023,7 +958,8 @@ describe('AuthorizeHandler integration', function() {
         getClient: function() {},
         saveAuthorizationCode: function() {},
         validateScope: function() { return true; },
-        authorizationAllowed: function() { return true; }
+        authorizationAllowed: function() { return true; },
+        saveToken: function() {}
       };
       var handler = new AuthorizeHandler({ authorizationCodeLifetime: 120, model: model });
       var request = new Request({ body: { response_type: 'foobar' }, headers: {}, method: {}, query: {} });
@@ -1045,7 +981,8 @@ describe('AuthorizeHandler integration', function() {
         getClient: function() {},
         saveAuthorizationCode: function() {},
         validateScope: function() { return true; },
-        authorizationAllowed: function() { return true; }
+        authorizationAllowed: function() { return true; },
+        saveToken: function() {}
       };
         var handler = new AuthorizeHandler({ authorizationCodeLifetime: 120, model: model });
         var request = new Request({ body: { response_type: 'code' }, headers: {}, method: {}, query: {} });
@@ -1062,7 +999,8 @@ describe('AuthorizeHandler integration', function() {
         getClient: function() {},
         saveAuthorizationCode: function() {},
         validateScope: function() { return true; },
-        authorizationAllowed: function() { return true; }
+        authorizationAllowed: function() { return true; },
+        saveToken: function() {}
       };
         var handler = new AuthorizeHandler({ authorizationCodeLifetime: 120, model: model });
         var request = new Request({ body: {}, headers: {}, method: {}, query: { response_type: 'code' } });
@@ -1078,15 +1016,16 @@ describe('AuthorizeHandler integration', function() {
       var model = {
         getAccessToken: function() {},
         getClient: function() {},
-        saveAuthorizationCode: function() {},
+        saveAuthorizationCode: function() { return { authorizationCode: 12345 }; },
         validateScope: function() { return true; },
-        authorizationAllowed: function() { return true; }
+        authorizationAllowed: function() { return true; },
+        saveToken: function() {}
       };
       var handler = new AuthorizeHandler({ authorizationCodeLifetime: 120, model: model });
-      var responseType = new CodeResponseType(12345);
-      var redirectUri = handler.buildSuccessRedirectUri('http://example.com/cb', responseType);
-
-      url.format(redirectUri).should.equal('http://example.com/cb?code=12345');
+      var responseType = new CodeResponseType({ authorizationCodeLifetime: 120, model: model });
+      return handler.buildSuccessRedirectUri(responseType, { redirectUri: 'http://example.com/cb' }, { id: 1 } ).then(function(redirect) {
+        return url.format(redirect.url).should.equal('http://example.com/cb?code=12345');
+      }).catch(should.fail);
     });
   });
 
@@ -1098,10 +1037,12 @@ describe('AuthorizeHandler integration', function() {
         getClient: function() {},
         saveAuthorizationCode: function() {},
         validateScope: function() { return true; },
-        authorizationAllowed: function() { return true; }
+        authorizationAllowed: function() { return true; },
+        saveToken: function() {}
       };
       var handler = new AuthorizeHandler({ authorizationCodeLifetime: 120, model: model });
-      var redirectUri = handler.buildErrorRedirectUri('http://example.com/cb', error);
+      var responseType = new CodeResponseType({ authorizationCodeLifetime: 120, model: model });
+      var redirectUri = handler.buildErrorRedirectUri(responseType, { redirectUri: 'http://example.com/cb' }, error);
 
       url.format(redirectUri).should.equal('http://example.com/cb?error=invalid_client&error_description=foo%20bar');
     });
@@ -1113,10 +1054,12 @@ describe('AuthorizeHandler integration', function() {
         getClient: function() {},
         saveAuthorizationCode: function() {},
         validateScope: function() { return true; },
-        authorizationAllowed: function() { return true; }
+        authorizationAllowed: function() { return true; },
+        saveToken: function() {}
       };
       var handler = new AuthorizeHandler({ authorizationCodeLifetime: 120, model: model });
-      var redirectUri = handler.buildErrorRedirectUri('http://example.com/cb', error);
+      var responseType = new CodeResponseType({ authorizationCodeLifetime: 120, model: model });
+      var redirectUri = handler.buildErrorRedirectUri(responseType, { redirectUri: 'http://example.com/cb' }, error);
 
       url.format(redirectUri).should.equal('http://example.com/cb?error=invalid_client&error_description=Bad%20Request');
     });
@@ -1129,13 +1072,15 @@ describe('AuthorizeHandler integration', function() {
         getClient: function() {},
         saveAuthorizationCode: function() {},
         validateScope: function() { return true; },
-        authorizationAllowed: function() { return true; }
+        authorizationAllowed: function() { return true; },
+        saveToken: function() {}
       };
       var handler = new AuthorizeHandler({ authorizationCodeLifetime: 120, model: model });
+      var responseType = new CodeResponseType({ authorizationCodeLifetime: 120, model: model });
       var response = new Response({ body: {}, headers: {} });
       var uri = url.parse('http://example.com/cb');
 
-      handler.updateResponse(response, uri, 'foobar');
+      handler.updateResponse(responseType, response, uri, 'foobar');
 
       response.get('location').should.equal('http://example.com/cb?state=foobar');
     });

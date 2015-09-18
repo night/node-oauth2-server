@@ -15,28 +15,6 @@ var should = require('should');
 
 describe('AbstractGrantType integration', function() {
   describe('constructor()', function() {
-    it('should throw an error if `options.accessTokenLifetime` is missing', function() {
-      try {
-        new AbstractGrantType();
-
-        should.fail();
-      } catch (e) {
-        e.should.be.an.instanceOf(InvalidArgumentError);
-        e.message.should.equal('Missing parameter: `accessTokenLifetime`');
-      }
-    });
-
-    it('should throw an error if `options.refreshTokenLifetime` is missing', function() {
-      try {
-        new AbstractGrantType({ accessTokenLifetime: 123 });
-
-        should.fail();
-      } catch (e) {
-        e.should.be.an.instanceOf(InvalidArgumentError);
-        e.message.should.equal('Missing parameter: `refreshTokenLifetime`');
-      }
-    });
-
     it('should throw an error if `options.model` is missing', function() {
       try {
         new AbstractGrantType({ accessTokenLifetime: 123, refreshTokenLifetime: 456 });

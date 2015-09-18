@@ -94,6 +94,9 @@ describe('Server integration', function() {
         saveAuthorizationCode: function() {
           return { authorizationCode: 123 };
         },
+        saveToken: function() {
+          return { accessToken: 1234, client: {}, user: {} };
+        },
         validateScope: function() { return true; },
         authorizationAllowed: function() { return true; }
       };
@@ -119,6 +122,9 @@ describe('Server integration', function() {
         saveAuthorizationCode: function() {
           return { authorizationCode: 123 };
         },
+        saveToken: function() {
+          return { accessToken: 1234, client: {}, user: {} };
+        },
         validateScope: function() { return true; },
         authorizationAllowed: function() { return true; }
       };
@@ -140,6 +146,9 @@ describe('Server integration', function() {
         },
         saveAuthorizationCode: function() {
           return { authorizationCode: 123 };
+        },
+        saveToken: function() {
+          return { accessToken: 1234, client: {}, user: {} };
         },
         validateScope: function() { return true; },
         authorizationAllowed: function() { return true; }

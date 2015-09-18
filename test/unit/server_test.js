@@ -36,6 +36,9 @@ describe('Server', function() {
     it('should call `handle`', function() {
       var model = {
         getAccessToken: function() {},
+        saveToken: function() {
+          return { accessToken: 1234, client: {}, user: {} };
+        },
         getClient: function() {},
         saveAuthorizationCode: function() {},
         validateScope: function() { return true; },
