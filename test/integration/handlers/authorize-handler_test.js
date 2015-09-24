@@ -7,6 +7,7 @@ var AccessDeniedError = require('../../../lib/errors/access-denied-error');
 var AuthenticateHandler = require('../../../lib/handlers/authenticate-handler');
 var AuthorizeHandler = require('../../../lib/handlers/authorize-handler');
 var CodeResponseType = require('../../../lib/response-types/code-response-type');
+var TokenResponseType = require('../../../lib/response-types/token-response-type');
 var InvalidArgumentError = require('../../../lib/errors/invalid-argument-error');
 var InvalidClientError = require('../../../lib/errors/invalid-client-error');
 var InvalidRequestError = require('../../../lib/errors/invalid-request-error');
@@ -1047,7 +1048,7 @@ describe('AuthorizeHandler integration', function() {
       url.format(redirectUri).should.equal('http://example.com/cb?error=invalid_client&error_description=foo%20bar');
     });
 
-    it('should return a redirect uri', function() {
+    it('should return a redirect uri with values in qs', function() {
       var error = new InvalidClientError();
       var model = {
         getAccessToken: function() {},
@@ -1062,6 +1063,23 @@ describe('AuthorizeHandler integration', function() {
       var redirectUri = handler.buildErrorRedirectUri(responseType, { redirectUri: 'http://example.com/cb' }, error);
 
       url.format(redirectUri).should.equal('http://example.com/cb?error=invalid_client&error_description=Bad%20Request');
+    });
+
+    it('should return a redirect uri with values in hash', function() {
+      var error = new InvalidClientError();
+      var model = {
+        getAccessToken: function() {},
+        getClient: function() {},
+        saveAuthorizationCode: function() {},
+        validateScope: function() { return true; },
+        authorizationAllowed: function() { return true; },
+        saveToken: function() {}
+      };
+      var handler = new AuthorizeHandler({ authorizationCodeLifetime: 120, model: model });
+      var responseType = new TokenResponseType({ accessTokenLifetime: 0, model: model });
+      var redirectUri = handler.buildErrorRedirectUri(responseType, { redirectUri: 'http://example.com/cb' }, error);
+
+      url.format(redirectUri).should.equal('http://example.com/cb#error=invalid_client&error_description=Bad%20Request');
     });
   });
 
@@ -1080,9 +1098,47 @@ describe('AuthorizeHandler integration', function() {
       var response = new Response({ body: {}, headers: {} });
       var uri = url.parse('http://example.com/cb');
 
+      handler.updateResponse(responseType, response, uri, null);
+
+      response.get('location').should.equal('http://example.com/cb');
+    });
+
+    it('should apply state in qs', function() {
+      var model = {
+        getAccessToken: function() {},
+        getClient: function() {},
+        saveAuthorizationCode: function() {},
+        validateScope: function() { return true; },
+        authorizationAllowed: function() { return true; },
+        saveToken: function() {}
+      };
+      var handler = new AuthorizeHandler({ authorizationCodeLifetime: 120, model: model });
+      var responseType = new CodeResponseType({ authorizationCodeLifetime: 120, model: model });
+      var response = new Response({ body: {}, headers: {} });
+      var uri = url.parse('http://example.com/cb');
+
       handler.updateResponse(responseType, response, uri, 'foobar');
 
       response.get('location').should.equal('http://example.com/cb?state=foobar');
+    });
+
+    it('should apply state in hash', function() {
+      var model = {
+        getAccessToken: function() {},
+        getClient: function() {},
+        saveAuthorizationCode: function() {},
+        validateScope: function() { return true; },
+        authorizationAllowed: function() { return true; },
+        saveToken: function() {}
+      };
+      var handler = new AuthorizeHandler({ authorizationCodeLifetime: 120, model: model });
+      var responseType = new TokenResponseType({ accessTokenLifetime: 0, model: model });
+      var response = new Response({ body: {}, headers: {} });
+      var uri = url.parse('http://example.com/cb');
+
+      handler.updateResponse(responseType, response, uri, 'foobar');
+
+      response.get('location').should.equal('http://example.com/cb#state=foobar');
     });
   });
 });
