@@ -437,22 +437,6 @@ describe('RefreshTokenGrantType integration', function() {
         });
     });
 
-    it('should throw an error if the `token.refreshTokenExpiresAt` is not expired', function() {
-      var model = {
-        getRefreshToken: function() {},
-        revokeToken: function() { return { refreshTokenExpiresAt: new Date(new Date() * 2) }; },
-        saveToken: function() {}
-      };
-      var grantType = new RefreshTokenGrantType({ accessTokenLifetime: 120, refreshTokenLifetime: 456, model: model });
-
-      grantType.revokeToken({})
-        .then(should.fail)
-        .catch(function (e) {
-          e.should.be.an.instanceOf(ServerError);
-          e.message.should.equal('Server error: refresh token should be expired');
-        });
-    });
-
     it('should revoke the token', function() {
       var token = { accessToken: 'foo', client: {}, refreshTokenExpiresAt: new Date(new Date() / 2), user: {} };
       var model = {
