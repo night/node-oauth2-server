@@ -380,42 +380,6 @@ describe('AuthorizeHandler integration', function() {
         });
     });
 
-    it('should redirect to an error response if `state` is missing', function() {
-      var model = {
-        getAccessToken: function() {
-          return { user: {} };
-        },
-        getClient: function() {
-          return { grants: ['authorization_code'], redirectUri: 'http://example.com/cb' };
-        },
-        saveAuthorizationCode: function() {
-          throw new AccessDeniedError('Cannot request this auth code');
-        },
-        validateScope: function() { return true; },
-        authorizationAllowed: function() { return true; },
-        saveToken: function() {}
-      };
-      var handler = new AuthorizeHandler({ authorizationCodeLifetime: 120, model: model });
-      var request = new Request({
-        body: {
-          client_id: 12345,
-          response_type: 'code'
-        },
-        headers: {
-          'Authorization': 'Bearer foo'
-        },
-        method: {},
-        query: {}
-      });
-      var response = new Response({ body: {}, headers: {} });
-
-      return handler.handle(request, response)
-        .then(should.fail)
-        .catch(function() {
-          response.get('location').should.equal('http://example.com/cb?error=invalid_request&error_description=Missing%20parameter%3A%20%60state%60');
-        });
-    });
-
     it('should return the `redirectU` if successful', function() {
       var client = { grants: ['authorization_code'], redirectUri: 'http://example.com/cb' };
       var model = {
@@ -826,28 +790,6 @@ describe('AuthorizeHandler integration', function() {
   });
 
   describe('getState()', function() {
-    it('should throw an error if `state` is missing', function() {
-      var model = {
-        getAccessToken: function() {},
-        getClient: function() {},
-        saveAuthorizationCode: function() {},
-        validateScope: function() { return true; },
-        authorizationAllowed: function() { return true; },
-        saveToken: function() {}
-      };
-      var handler = new AuthorizeHandler({ authorizationCodeLifetime: 120, model: model });
-      var request = new Request({ body: {}, headers: {}, method: {}, query: {} });
-
-      try {
-        handler.getState(request);
-
-        should.fail();
-      } catch (e) {
-        e.should.be.an.instanceOf(InvalidRequestError);
-        e.message.should.equal('Missing parameter: `state`');
-      }
-    });
-
     it('should throw an error if `state` is invalid', function() {
       var model = {
         getAccessToken: function() {},

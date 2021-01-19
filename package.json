@@ -12,18 +12,16 @@
   },
   "main": "index.js",
   "dependencies": {
-    "basic-auth": "^1.0.0",
-    "bluebird": "^2.9.13",
-    "camel-case": "^1.1.1",
-    "lodash": "^3.3.1",
-    "standard-http-error": "^1.1.0",
-    "type-is": "^1.6.0",
-    "validator.js": "^1.1.1"
+    "basic-auth": "^2.0.1",
+    "bluebird": "^3.7.2",
+    "lodash": "^4.17.20",
+    "standard-http-error": "^2.0.1",
+    "type-is": "^1.6.0"
   },
   "devDependencies": {
-    "mocha": "^2.2.1",
-    "should": "^5.0.1",
-    "sinon": "^1.13.0"
+    "mocha": "^8.2.1",
+    "should": "^13.2.3",
+    "sinon": "^9.2.3"
   },
   "license": "MIT",
   "engines": {
